@@ -19,10 +19,14 @@ import Feeds from './AllowlistView';
 function LandingPage() {
   return (
     <Grid columns="2" gap="4">
-      <Card>
+      <Card style={{
+        background: 'linear-gradient(to bottom right, #cbdcf7, #d5ccf7)',
+        color: '#1a1a1a',
+        border: '1px solid #ccc'
+      }}>
         <Flex direction="column" gap="2" align="center" style={{ height: '100%' }}>
           <div style={{ textAlign: 'center' }}>
-            <h2>Allowlist Example</h2>
+            <h2 style={{ fontFamily: 'Orbitron, sans-serif' }}>Allowlist Example</h2>
             <p>
               Shows how a creator can define an allowlist based access. The creator first creates an
               allowlist and can add or remove users in the list. The creator can then associate
@@ -31,14 +35,18 @@ function LandingPage() {
             </p>
           </div>
           <Link to="/allowlist-example">
-            <Button size="3">Try it</Button>
+            <Button size="3" style={{ fontFamily: 'Orbitron, sans-serif' }}>Try it</Button>
           </Link>
         </Flex>
       </Card>
-      <Card>
+      <Card style={{
+        background: 'linear-gradient(to bottom right, #cbdcf7, #e4c3f7)',
+        color: '#1a1a1a',
+        border: '1px solid #ccc'
+      }}>
         <Flex direction="column" gap="2" align="center" style={{ height: '100%' }}>
           <div style={{ textAlign: 'center' }}>
-            <h2>Subscription Example</h2>
+            <h2 style={{ fontFamily: 'Orbitron, sans-serif' }}>Subscription Example</h2>
             <p>
               Shows how a creator can define a subscription based access to its published files. The
               creator defines subcription fee and how long a subscription is valid for. The creator
@@ -49,7 +57,7 @@ function LandingPage() {
             </p>
           </div>
           <Link to="/subscription-example">
-            <Button size="3">Try it</Button>
+            <Button size="3" style={{ fontFamily: 'Orbitron, sans-serif' }}>Try it</Button>
           </Link>
         </Flex>
       </Card>
@@ -62,22 +70,21 @@ function App() {
   const [recipientAllowlist, setRecipientAllowlist] = useState<string>('');
   const [capId, setCapId] = useState<string>('');
   return (
-    <Container>
+    <Container style={{ backgroundColor: '#0d0d0d', color: '#f0f0f0', fontFamily: 'Orbitron, sans-serif', minHeight: '100vh', paddingBottom: '2rem' }}>
       <Flex position="sticky" px="4" py="2" justify="between">
-        <h1 className="text-4xl font-bold m-4 mb-8">Seal Example Apps</h1>
-        {/* <p>TODO: add seal logo</p> */}
+        <h1 className="text-4xl font-bold m-4 mb-8" style={{ color: '#84caff' }}>CryptoSeal DApp</h1>
         <Box>
           <ConnectButton />
         </Box>
       </Flex>
-      <Card style={{ marginBottom: '2rem' }}>
+      <Card style={{ backgroundColor: '#1e1e2f', color: '#dcdcdc', marginBottom: '2rem', border: '1px solid #444', padding: '1rem' }}>
         <p>
           1. Code is available{' '}
-          <a href="https://github.com/MystenLabs/seal/tree/main/examples">here</a>.
+          <a href="https://github.com/MystenLabs/seal/tree/main/examples" style={{ color: '#84caff' }}>here</a>.
         </p>
         <p>
-          2. These examples are for Testnet only. Make sure you wallet is set to Testnet and has
-          some balance (can request from <a href="https://faucet.sui.io/">faucet.sui.io</a>).
+          2. These examples are for Testnet only. Make sure your wallet is set to Testnet and has
+          some balance (can request from <a href="https://faucet.sui.io/" style={{ color: '#b98fff' }}>faucet.sui.io</a>).
         </p>
         <p>
           3. Blobs are only stored on Walrus Testnet for 1 epoch by default, older files cannot be
@@ -153,7 +160,7 @@ function App() {
           </Routes>
         </BrowserRouter>
       ) : (
-        <p>Please connect your wallet to continue</p>
+        <p style={{ textAlign: 'center', paddingTop: '2rem' }}>Please connect your wallet to continue</p>
       )}
     </Container>
   );
