@@ -148,6 +148,7 @@ const Feeds: React.FC<{ suiAddress: string }> = ({ suiAddress }) => {
         Files for: <span style={{ color: '#ffffff' }}>{feed?.allowlistName}</span>
       </Heading>
       <Flex direction="row" gap="2" style={{ marginBottom: '1rem' }}>
+  <Flex direction="column" gap="1" style={{ marginBottom: '1rem' }}>
   <Text size="2">ID:</Text>
   <a
     href={getObjectExplorerLink(feed?.allowlistId || '')}
@@ -158,6 +159,7 @@ const Feeds: React.FC<{ suiAddress: string }> = ({ suiAddress }) => {
     {feed?.allowlistId}
   </a>
 </Flex>
+
 
       {feed?.blobIds.length === 0 ? (
         <Text>No files found for this allowlist.</Text>
