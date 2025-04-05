@@ -7,7 +7,7 @@ import { Transaction } from '@mysten/sui/transactions';
 import { getAllowlistedKeyServers, SealClient, SessionKey } from '@mysten/seal';
 import { useParams } from 'react-router-dom';
 import { downloadAndDecrypt, getObjectExplorerLink, MoveCallConstructor } from './utils';
-import './global.css'; // Pastikan ini ada
+import './global.css'; // Impor CSS global
 
 const TTL_MIN = 10;
 
@@ -39,33 +39,39 @@ export const Allowlist = ({ suiAddress }: { suiAddress: string }) => {
 	const [decryptedFileUrls, setDecryptedFileUrls] = useState<string[]>([]);
 	const [error, setError] = useState<string | null>(null);
 	const [currentSessionKey, setCurrentSessionKey] = useState<SessionKey | null>(null);
-	const { id } = useParams();
+	const { id } = useParams<{ id: string }>(); // Tipe eksplisit untuk useParams
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [reloadKey, setReloadKey] = useState(0);
 
 	const { mutate: signPersonalMessage } = useSignPersonalMessage();
 
 	useEffect(() => {
+		if (!id) return;
 		getFeed();
 		const intervalId = setInterval(() => getFeed(), 3000);
 		return () => clearInterval(intervalId);
 	}, [id, suiClient, packageId]);
 
 	async function getFeed() {
-		const allowlist = await suiClient.getObject({
-			id: id!,
-			options: { showContent: true },
-		});
-		const encryptedObjects = await suiClient
-			.getDynamicFields({ parentId: id! })
-			.then((res) => res.data.map((obj) => obj.name.value as string));
+		try {
+			const allowlist = await suiClient.getObject({
+				id: id!,
+				options: { showContent: true },
+			});
+			const encryptedObjects = await suiClient
+				.getDynamicFields({ parentId: id! })
+				.then((res) => res.data.map((obj) => obj.name.value as string));
 
-		const fields = (allowlist.data?.content as { fields: any })?.fields || {};
-		setFeed({
-			allowlistId: id!,
-			allowlistName: fields?.name || 'Unnamed Chain',
-			blobIds: encryptedObjects,
-		});
+			const fields = (allowlist.data?.content as { fields: any })?.fields || {};
+			setFeed({
+				allowlistId: id!,
+				allowlistName: fields?.name || 'Unnamed Chain',
+				blobIds: encryptedObjects,
+			});
+		} catch (err) {
+			setError('Failed to fetch blockchain data');
+			console.error(err);
+		}
 	}
 
 	const onView = async (blobIds: string[], allowlistId: string) => {
@@ -96,29 +102,38 @@ export const Allowlist = ({ suiAddress }: { suiAddress: string }) => {
 			ttlMin: TTL_MIN,
 		});
 
-		signPersonalMessage(
-			{
-				message: sessionKey.getPersonalMessage(),
-			},
-			{
-				onSuccess: async (result) => {
-					await sessionKey.setPersonalMessageSignature(result.signature);
-					const moveCallConstructor = constructMoveCall(packageId, allowlistId);
-					await downloadAndDecrypt(
-						blobIds,
-						sessionKey,
-						suiClient,
-						client,
-						moveCallConstructor,
-						setError,
-						setDecryptedFileUrls,
-						setIsDialogOpen,
-						setReloadKey,
-					);
-					setCurrentSessionKey(sessionKey);
+		try {
+			signPersonalMessage(
+				{
+					message: sessionKey.getPersonalMessage(),
 				},
-			},
-		);
+				{
+					onSuccess: async (result) => {
+						await sessionKey.setPersonalMessageSignature(result.signature);
+						const moveCallConstructor = constructMoveCall(packageId, allowlistId);
+						await downloadAndDecrypt(
+							blobIds,
+							sessionKey,
+							suiClient,
+							client,
+							moveCallConstructor,
+							setError,
+							setDecryptedFileUrls,
+							setIsDialogOpen,
+							setReloadKey,
+						);
+						setCurrentSessionKey(sessionKey);
+					},
+					onError: (err) => {
+						setError('Failed to sign blockchain message');
+						console.error(err);
+					},
+				},
+			);
+		} catch (err) {
+			setError('Crypto operation failed');
+			console.error('Error:', err);
+		}
 	};
 
 	return (
@@ -131,10 +146,13 @@ export const Allowlist = ({ suiAddress }: { suiAddress: string }) => {
 				boxShadow: '0 0 25px rgba(0, 255, 157, 0.5)', // Glow neon
 				border: '1px solid #00d4ff', // Biru digital
 				fontFamily: 'Orbitron, sans-serif',
+				maxWidth: '600px',
 			}}
 		>
 			<Flex direction="column" gap="1" style={{ marginBottom: '1rem' }}>
-				<Text size="2" style={{ color: '#00ff9d' }}>Blockchain ID:</Text>
+				<Text size="2" style={{ color: '#00ff9d' }}>
+					Blockchain ID:
+				</Text>
 				<a
 					href={getObjectExplorerLink(feed?.allowlistId || '')}
 					target="_blank"
@@ -172,8 +190,9 @@ export const Allowlist = ({ suiAddress }: { suiAddress: string }) => {
 								animation: 'pulse 2s infinite',
 								marginTop: '1rem',
 							}}
+							disabled={!feed}
 						>
-							🔗 Reveal Crypto Files
+							🔗 Decrypt Crypto Files
 						</Button>
 					</Dialog.Trigger>
 
@@ -183,11 +202,12 @@ export const Allowlist = ({ suiAddress }: { suiAddress: string }) => {
 								backgroundColor: '#001f3f',
 								color: '#fff',
 								border: '1px solid #00ff9d',
+								maxWidth: '500px',
 							}}
 							key={reloadKey}
 						>
 							<Flex direction="column" gap="3">
-								<Text style={{ color: '#00ff9d' }}>🔐 Decrypted Blockchain Files</Text>
+								<Text style={{ color: '#00ff9d' }}>🔐 Decrypted Blockchain Assets</Text>
 								{decryptedFileUrls.map((url, i) => (
 									<img
 										key={i}
@@ -215,22 +235,11 @@ export const Allowlist = ({ suiAddress }: { suiAddress: string }) => {
 							onClick={() => setError(null)}
 							style={{ backgroundColor: '#00ff9d', color: '#001f3f' }}
 						>
-							Ok
+							Close
 						</Button>
 					</AlertDialog.Action>
 				</AlertDialog.Content>
 			</AlertDialog.Root>
-			<Text
-				size="1"
-				style={{
-					marginTop: '1rem',
-					color: '#8b00ff',
-					fontFamily: 'monospace',
-					textAlign: 'center',
-				}}
-			>
-				Powered by Blockchain ⚡️
-			</Text>
 		</Card>
 	);
 };
