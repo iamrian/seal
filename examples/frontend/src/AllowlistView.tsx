@@ -147,18 +147,18 @@ const Feeds: React.FC<{ suiAddress: string }> = ({ suiAddress }) => {
       <Heading size="6" style={{ marginBottom: '1rem', color: '#7fdbff' }}>
         Files for: <span style={{ color: '#ffffff' }}>{feed?.allowlistName}</span>
       </Heading>
-      <Flex direction="row" gap="2" style={{ marginBottom: '1rem' }}>
-  <Flex direction="column" gap="1" style={{ marginBottom: '1rem' }}>
+      <Flex direction="column" gap="1" style={{ marginBottom: '1rem' }}>
   <Text size="2">ID:</Text>
-  <a
+  <Text size="2" as="a"
     href={getObjectExplorerLink(feed?.allowlistId || '')}
     target="_blank"
     rel="noreferrer"
-    style={{ color: '#a78bfa', textDecoration: 'underline', fontSize: '0.875rem' }}
+    style={{ color: '#a78bfa', textDecoration: 'underline' }}
   >
     {feed?.allowlistId}
-  </a>
+  </Text>
 </Flex>
+
 
 
       {feed?.blobIds.length === 0 ? (
