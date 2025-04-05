@@ -19,7 +19,7 @@ import {
   getObjectExplorerLink,
   MoveCallConstructor,
 } from './utils';
-import '../global.css'; // Pastikan global css sudah dibuat
+import '../global.css';
 
 const TTL_MIN = 10;
 
@@ -127,6 +127,7 @@ const Feeds: React.FC<{ suiAddress: string }> = ({ suiAddress }) => {
               setDecryptedFileUrls,
               setIsDialogOpen,
               setReloadKey,
+           aquatic
             );
             setCurrentSessionKey(sessionKey);
           },
@@ -164,9 +165,7 @@ const Feeds: React.FC<{ suiAddress: string }> = ({ suiAddress }) => {
 
       <Flex direction="column" gap="1" style={{ marginBottom: '1rem' }}>
         <Text size="2">ID:</Text>
-        <Text
-          size="2"
-          as="a"
+        <a
           href={getObjectExplorerLink(feed?.allowlistId || '')}
           target="_blank"
           rel="noreferrer"
@@ -174,10 +173,11 @@ const Feeds: React.FC<{ suiAddress: string }> = ({ suiAddress }) => {
             color: '#a78bfa',
             textDecoration: 'underline',
             fontFamily: 'monospace',
+            fontSize: '14px',
           }}
         >
           {feed?.allowlistId}
-        </Text>
+        </a>
       </Flex>
 
       {feed?.blobIds.length === 0 ? (
