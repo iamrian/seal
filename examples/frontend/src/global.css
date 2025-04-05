@@ -1,20 +1,18 @@
 body {
-  background-color: #0f0f1a;
-  color: #ffffff;
-  font-family: 'Orbitron', sans-serif;
   margin: 0;
   padding: 0;
-}
-
-a {
-  color: #7fdbff;
-  text-decoration: none;
-}
-
-button {
+  background: linear-gradient(135deg, #001f3f, #00ff9d); /* Default crypto background */
   font-family: 'Orbitron', sans-serif;
 }
 
-* {
-  box-sizing: border-box;
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 255, 157, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(0, 255, 157, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 255, 157, 0);
+  }
 }
