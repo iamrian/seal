@@ -165,5 +165,16 @@ function App() {
     </Container>
   );
 }
+// src/App.tsx
+import './global.css'; // Tambahkan kalau belum ada
+
+function App() {
+  return (
+    <div className="app-container">
+      {/* Semua routing di sini */}
+    </div>
+  );
+}
 
 export default App;
+
