@@ -3,10 +3,18 @@
 import { useEffect, useState } from 'react';
 import { useSignPersonalMessage, useSuiClient } from '@mysten/dapp-kit';
 import { useNetworkVariable } from './networkConfig';
-import { AlertDialog, Button, Card, Dialog, Flex, Grid } from '@radix-ui/themes';
+import {
+  AlertDialog,
+  Button,
+  Card,
+  Dialog,
+  Flex,
+  Grid,
+  Text,
+  Heading,
+} from '@radix-ui/themes';
 import { fromHex } from '@mysten/sui/utils';
 import { Transaction } from '@mysten/sui/transactions';
-import { SuiClient } from '@mysten/sui/client';
 import { getAllowlistedKeyServers, SealClient, SessionKey } from '@mysten/seal';
 import { useParams } from 'react-router-dom';
 import { downloadAndDecrypt, getObjectExplorerLink, MoveCallConstructor } from './utils';
@@ -47,17 +55,10 @@ const Feeds: React.FC<{ suiAddress: string }> = ({ suiAddress }) => {
   const { mutate: signPersonalMessage } = useSignPersonalMessage();
 
   useEffect(() => {
-    // Call getFeed immediately
     getFeed();
-
-    // Set up interval to call getFeed every 3 seconds
-    const intervalId = setInterval(() => {
-      getFeed();
-    }, 3000);
-
-    // Cleanup interval on component unmount
+    const intervalId = setInterval(() => getFeed(), 3000);
     return () => clearInterval(intervalId);
-  }, [id, suiClient, packageId]); // Add all dependencies that getFeed uses
+  }, [id, suiClient, packageId]);
 
   async function getFeed() {
     const allowlist = await suiClient.getObject({
@@ -65,17 +66,15 @@ const Feeds: React.FC<{ suiAddress: string }> = ({ suiAddress }) => {
       options: { showContent: true },
     });
     const encryptedObjects = await suiClient
-      .getDynamicFields({
-        parentId: id!,
-      })
+      .getDynamicFields({ parentId: id! })
       .then((res) => res.data.map((obj) => obj.name.value as string));
+
     const fields = (allowlist.data?.content as { fields: any })?.fields || {};
-    const feedData = {
+    setFeed({
       allowlistId: id!,
       allowlistName: fields?.name,
       blobIds: encryptedObjects,
-    };
-    setFeed(feedData);
+    });
   }
 
   const onView = async (blobIds: string[], allowlistId: string) => {
@@ -100,7 +99,6 @@ const Feeds: React.FC<{ suiAddress: string }> = ({ suiAddress }) => {
     }
 
     setCurrentSessionKey(null);
-
     const sessionKey = new SessionKey({
       address: suiAddress,
       packageId,
@@ -115,7 +113,7 @@ const Feeds: React.FC<{ suiAddress: string }> = ({ suiAddress }) => {
         {
           onSuccess: async (result) => {
             await sessionKey.setPersonalMessageSignature(result.signature);
-            const moveCallConstructor = await constructMoveCall(packageId, allowlistId);
+            const moveCallConstructor = constructMoveCall(packageId, allowlistId);
             await downloadAndDecrypt(
               blobIds,
               sessionKey,
@@ -137,60 +135,87 @@ const Feeds: React.FC<{ suiAddress: string }> = ({ suiAddress }) => {
   };
 
   return (
-    <Card>
-      <h2 style={{ marginBottom: '1rem' }}>
-        Files for Allowlist {feed?.allowlistName} (ID{' '}
-        {feed?.allowlistId && getObjectExplorerLink(feed.allowlistId)})
-      </h2>
-      {feed === undefined ? (
-        <p>No files found for this allowlist.</p>
+    <Card
+      style={{
+        background: 'linear-gradient(to bottom right, #1d1f3f, #3b1f5e)',
+        color: '#f0f4ff',
+        padding: '2rem',
+        borderRadius: '1rem',
+        boxShadow: '0 0 15px #7f5af0',
+      }}
+    >
+      <Heading size="6" style={{ marginBottom: '1rem', color: '#7fdbff' }}>
+        Files for: <span style={{ color: '#ffffff' }}>{feed?.allowlistName}</span>
+      </Heading>
+      <Text size="2" style={{ marginBottom: '1rem' }}>
+        ID:{' '}
+        <a
+          href={getObjectExplorerLink(feed?.allowlistId || '')}
+          target="_blank"
+          rel="noreferrer"
+          style={{ color: '#a78bfa', textDecoration: 'underline' }}
+        >
+          {feed?.allowlistId}
+        </a>
+      </Text>
+
+      {feed?.blobIds.length === 0 ? (
+        <Text>No files found for this allowlist.</Text>
       ) : (
-        <Grid columns="2" gap="3">
-          <Card key={feed!.allowlistId}>
-            <Flex direction="column" align="start" gap="2">
-              {feed!.blobIds.length === 0 ? (
-                <p>No files found for this allowlist.</p>
-              ) : (
-                <Dialog.Root open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                  <Dialog.Trigger>
-                    <Button onClick={() => onView(feed!.blobIds, feed!.allowlistId)}>
-                      Download And Decrypt All Files
-                    </Button>
-                  </Dialog.Trigger>
-                  {decryptedFileUrls.length > 0 && (
-                    <Dialog.Content maxWidth="450px" key={reloadKey}>
-                      <Dialog.Title>View all files retrieved from Walrus</Dialog.Title>
-                      <Flex direction="column" gap="2">
-                        {decryptedFileUrls.map((decryptedFileUrl, index) => (
-                          <div key={index}>
-                            <img src={decryptedFileUrl} alt={`Decrypted image ${index + 1}`} />
-                          </div>
-                        ))}
-                      </Flex>
-                      <Flex gap="3" mt="4" justify="end">
-                        <Dialog.Close>
-                          <Button
-                            variant="soft"
-                            color="gray"
-                            onClick={() => setDecryptedFileUrls([])}
-                          >
-                            Close
-                          </Button>
-                        </Dialog.Close>
-                      </Flex>
-                    </Dialog.Content>
-                  )}
-                </Dialog.Root>
-              )}
-            </Flex>
-          </Card>
-        </Grid>
+        <Dialog.Root open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <Dialog.Trigger>
+            <Button
+              size="3"
+              style={{
+                backgroundColor: '#7f5af0',
+                color: '#ffffff',
+                borderRadius: '0.5rem',
+              }}
+              onClick={() => onView(feed!.blobIds, feed!.allowlistId)}
+            >
+              🚀 Decrypt & View All Files
+            </Button>
+          </Dialog.Trigger>
+
+          {decryptedFileUrls.length > 0 && (
+            <Dialog.Content
+              maxWidth="600px"
+              style={{ backgroundColor: '#1e1e2f', color: '#fff' }}
+              key={reloadKey}
+            >
+              <Dialog.Title style={{ color: '#7fdbff' }}>
+                🖼️ Decrypted Files
+              </Dialog.Title>
+              <Flex direction="column" gap="3" mt="3">
+                {decryptedFileUrls.map((url, i) => (
+                  <img
+                    key={i}
+                    src={url}
+                    alt={`Decrypted File ${i + 1}`}
+                    style={{ borderRadius: '0.5rem', maxWidth: '100%' }}
+                  />
+                ))}
+              </Flex>
+              <Flex gap="3" mt="4" justify="end">
+                <Dialog.Close>
+                  <Button
+                    variant="soft"
+                    color="gray"
+                    onClick={() => setDecryptedFileUrls([])}
+                  >
+                    Close
+                  </Button>
+                </Dialog.Close>
+              </Flex>
+            </Dialog.Content>
+          )}
+        </Dialog.Root>
       )}
+
       <AlertDialog.Root open={!!error} onOpenChange={() => setError(null)}>
         <AlertDialog.Content maxWidth="450px">
           <AlertDialog.Title>Error</AlertDialog.Title>
           <AlertDialog.Description size="2">{error}</AlertDialog.Description>
-
           <Flex gap="3" mt="4" justify="end">
             <AlertDialog.Action>
               <Button variant="solid" color="gray" onClick={() => setError(null)}>
