@@ -1,18 +1,21 @@
-// Copyright (c), Mysten Labs, Inc.
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { Transaction } from '@mysten/sui/transactions';
-import { Button, Card, Flex } from '@radix-ui/themes';
-import { useSignAndExecuteTransaction, useSuiClient } from '@mysten/dapp-kit';
 import { useState } from 'react';
+import { useSignAndExecuteTransaction, useSuiClient } from '@mysten/dapp-kit';
+import { Transaction } from '@mysten/sui/transactions';
+import { Button, Card, Flex, TextField, Text } from '@radix-ui/themes';
 import { useNetworkVariable } from './networkConfig';
-import { useNavigate } from 'react-router-dom';
+import './styles/crypto-style.css'; // Tambahkan file CSS custom untuk style NFT vibes
 
 export function CreateAllowlist() {
-  const navigate = useNavigate();
   const [name, setName] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [successMsg, setSuccessMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
   const packageId = useNetworkVariable('packageId');
   const suiClient = useSuiClient();
+
   const { mutate: signAndExecute } = useSignAndExecuteTransaction({
     execute: async ({ bytes, signature }) =>
       await suiClient.executeTransactionBlock({
@@ -25,60 +28,67 @@ export function CreateAllowlist() {
       }),
   });
 
-  function createAllowlist(name: string) {
-    if (name === '') {
-      alert('Please enter a name for the allowlist');
+  const createAllowlist = () => {
+    if (name.trim() === '') {
+      setErrorMsg('Allowlist name cannot be empty');
       return;
     }
+
+    setIsLoading(true);
+    setErrorMsg('');
+    setSuccessMsg('');
+
     const tx = new Transaction();
     tx.moveCall({
-      target: `${packageId}::allowlist::create_allowlist_entry`,
-      arguments: [tx.pure.string(name)],
+      arguments: [tx.pure.string(name.trim())],
+      target: `${packageId}::allowlist::create`,
     });
     tx.setGasBudget(10000000);
+
     signAndExecute(
       {
         transaction: tx,
       },
       {
         onSuccess: async (result) => {
-          console.log('res', result);
-          // Extract the created allowlist object ID from the transaction result
-          const allowlistObject = result.effects?.created?.find(
-            (item) => item.owner && typeof item.owner === 'object' && 'Shared' in item.owner,
-          );
-          const createdObjectId = allowlistObject?.reference?.objectId;
-          if (createdObjectId) {
-            window.open(
-              `${window.location.origin}/allowlist-example/admin/allowlist/${createdObjectId}`,
-              '_blank',
-            );
-          }
+          console.log('Allowlist created:', result);
+          setSuccessMsg('Allowlist successfully created!');
+          setName('');
+          setIsLoading(false);
+        },
+        onError: (err) => {
+          console.error(err);
+          setErrorMsg('Something went wrong creating the allowlist.');
+          setIsLoading(false);
         },
       },
     );
-  }
-
-  const handleViewAll = () => {
-    navigate(`/allowlist-example/admin/allowlists`);
   };
 
   return (
-    <Card>
-      <h2 style={{ marginBottom: '1rem' }}>Admin View: Allowlist</h2>
-      <Flex direction="row" gap="2" justify="start">
-        <input placeholder="Allowlist Name" onChange={(e) => setName(e.target.value)} />
+    <Card className="custom-card dark-mode-card" style={{ padding: '2rem' }}>
+      <Text size="5" weight="bold" className="gradient-title">
+        Create New Allowlist
+      </Text>
+
+      <Flex direction="column" gap="3" mt="3">
+        <TextField.Root
+          placeholder="Enter allowlist name"
+          value={name}
+          onChange={(e) => setName(e.currentTarget.value)}
+          className="text-field-custom"
+        />
         <Button
-          size="3"
-          onClick={() => {
-            createAllowlist(name);
-          }}
+          onClick={createAllowlist}
+          disabled={isLoading}
+          className="glow-button"
+          style={{ width: 'fit-content' }}
         >
-          Create Allowlist
+          {isLoading ? 'Creating...' : 'Create'}
         </Button>
-        <Button size="3" onClick={handleViewAll}>
-          View All Created Allowlists
-        </Button>
+
+        {successMsg && <Text color="green">{successMsg}</Text>}
+        {errorMsg && <Text color="red">{errorMsg}</Text>}
       </Flex>
     </Card>
   );
