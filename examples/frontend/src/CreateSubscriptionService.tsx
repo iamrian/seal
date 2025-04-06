@@ -60,27 +60,129 @@ export function CreateService() {
       },
     );
   }
+
   const handleViewAll = () => {
     navigate(`/subscription-example/admin/services`);
   };
+
   return (
-    <Card className="max-w-xs">
-      <h2 style={{ marginBottom: '1rem' }}>Admin View: Subscription</h2>
-      <Flex direction="column" gap="2" justify="start">
-        Price in Mist: <input onChange={(e) => setPrice(e.target.value)} />
-        Subscription duration in minutes: <input onChange={(e) => setTtl(e.target.value)} />
-        Name of the service: <input onChange={(e) => setName(e.target.value)} />
-        <Flex direction="row" gap="2" justify="start">
+    <Card
+      style={{
+        background: '#ffffff',
+        borderRadius: '20px',
+        padding: '2rem',
+        boxShadow: '0 0 20px rgba(0, 0, 0, 0.05)',
+        width: '100%',
+        maxWidth: '720px',
+        margin: '0 auto',
+      }}
+    >
+      <h2 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '1.5rem', color: '#111' }}>
+        Admin View: Subscription
+      </h2>
+      <Flex direction="column" gap="4">
+        <label
+          style={{
+            fontWeight: 600,
+            fontSize: '1rem',
+            background: 'linear-gradient(to right, #3b82f6, #9333ea)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            marginBottom: '0.25rem',
+          }}
+        >
+          Price in MIST
+        </label>
+        <input
+          type="number"
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+          placeholder="Enter price in MIST"
+          style={{
+            padding: '0.75rem 1rem',
+            borderRadius: '10px',
+            border: '1px solid #cbd5e0',
+            backgroundColor: '#f9fafb',
+            fontSize: '1rem',
+          }}
+        />
+
+        <label
+          style={{
+            fontWeight: 600,
+            fontSize: '1rem',
+            background: 'linear-gradient(to right, #3b82f6, #9333ea)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            marginBottom: '0.25rem',
+          }}
+        >
+          Subscription duration (minutes)
+        </label>
+        <input
+          type="number"
+          value={ttl}
+          onChange={(e) => setTtl(e.target.value)}
+          placeholder="Enter duration"
+          style={{
+            padding: '0.75rem 1rem',
+            borderRadius: '10px',
+            border: '1px solid #cbd5e0',
+            backgroundColor: '#f9fafb',
+            fontSize: '1rem',
+          }}
+        />
+
+        <label
+          style={{
+            fontWeight: 600,
+            fontSize: '1rem',
+            background: 'linear-gradient(to right, #3b82f6, #9333ea)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            marginBottom: '0.25rem',
+          }}
+        >
+          Name of the service
+        </label>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Enter service name"
+          style={{
+            padding: '0.75rem 1rem',
+            borderRadius: '10px',
+            border: '1px solid #cbd5e0',
+            backgroundColor: '#f9fafb',
+            fontSize: '1rem',
+          }}
+        />
+
+        <Flex direction="row" gap="3" justify="start" style={{ marginTop: '1rem' }}>
           <Button
-            size="3"
-            onClick={() => {
-              createService(parseInt(price), parseInt(ttl), name);
+            onClick={() => createService(parseInt(price), parseInt(ttl), name)}
+            style={{
+              background: 'linear-gradient(to right, #00bfff, #6a5acd)',
+              color: 'white',
+              borderRadius: '12px',
+              padding: '0.75rem 1.5rem',
+              fontWeight: 'bold',
             }}
           >
             Create Service
           </Button>
-          <Button size="3" onClick={handleViewAll}>
-            View All Created Services
+          <Button
+            onClick={handleViewAll}
+            style={{
+              background: '#e0e7ff',
+              color: '#4f46e5',
+              borderRadius: '12px',
+              padding: '0.75rem 1.5rem',
+              fontWeight: 'bold',
+            }}
+          >
+            View All Services
           </Button>
         </Flex>
       </Flex>

@@ -1,5 +1,6 @@
 // Copyright (c), Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
+
 import { useCurrentAccount, useSuiClient } from '@mysten/dapp-kit';
 import { Card, Flex } from '@radix-ui/themes';
 import { useEffect, useState } from 'react';
@@ -29,7 +30,6 @@ export function Service({ setRecipientAllowlist, setCapId }: AllowlistProps) {
 
   useEffect(() => {
     async function getService() {
-      // load the service for the given id
       const service = await suiClient.getObject({
         id: id!,
         options: { showContent: true },
@@ -44,7 +44,6 @@ export function Service({ setRecipientAllowlist, setCapId }: AllowlistProps) {
       });
       setRecipientAllowlist(id!);
 
-      // load all caps
       const res = await suiClient.getOwnedObjects({
         owner: currentAccount?.address!,
         options: {
@@ -56,7 +55,6 @@ export function Service({ setRecipientAllowlist, setCapId }: AllowlistProps) {
         },
       });
 
-      // find the cap for the given service id
       const capId = res.data
         .map((obj) => {
           const fields = (obj!.data!.content as { fields: any }).fields;
@@ -70,46 +68,82 @@ export function Service({ setRecipientAllowlist, setCapId }: AllowlistProps) {
       setCapId(capId[0]);
     }
 
-    // Call getService immediately
     getService();
-
-    // Set up interval to call getService every 3 seconds
-    const intervalId = setInterval(() => {
-      getService();
-    }, 3000);
-
-    // Cleanup interval on component unmount
+    const intervalId = setInterval(() => getService(), 3000);
     return () => clearInterval(intervalId);
-  }, [id]); // Only depend on id since it's needed for the API calls
+  }, [id]);
 
   return (
-    <Flex direction="column" gap="2" justify="start">
-      <Card key={`${service?.id}`}>
-        <h2 style={{ marginBottom: '1rem' }}>
-          Admin View: Service {service?.name} (ID {service?.id && getObjectExplorerLink(service.id)}
-          )
+    <Flex
+      direction="column"
+      gap="4"
+      justify="start"
+      align="center"
+      style={{
+        padding: '2rem',
+        backgroundColor: '#ffffff',
+        minHeight: '100vh',
+        fontFamily: 'Inter, sans-serif',
+        color: '#1e1e1e',
+      }}
+    >
+      <Card
+        key={`${service?.id}`}
+        style={{
+          width: '100%',
+          maxWidth: '700px',
+          borderRadius: '20px',
+          background: '#ffffff',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+          padding: '2rem',
+          border: '1px solid #e0e0e0',
+        }}
+      >
+        <h2
+          style={{
+            fontSize: '1.5rem',
+            fontWeight: 700,
+            color: '#3b82f6',
+            marginBottom: '1rem',
+          }}
+        >
+          Admin View: {service?.name}{' '}
+          <span style={{ fontWeight: 400, fontSize: '0.9rem' }}>
+            (ID {service?.id && getObjectExplorerLink(service.id)})
+          </span>
         </h2>
-        <h3 style={{ marginBottom: '1rem' }}>
-          Share&nbsp;
+
+        <h3
+          style={{
+            fontSize: '1rem',
+            fontWeight: 500,
+            color: '#6b7280',
+            marginBottom: '1.5rem',
+          }}
+        >
+          Share{' '}
           <a
             href={`${window.location.origin}/subscription-example/view/service/${service?.id}`}
             target="_blank"
             rel="noopener noreferrer"
-            style={{ textDecoration: 'underline' }}
-            aria-label="Download encrypted blob"
+            style={{
+              textDecoration: 'underline',
+              color: '#7c3aed',
+              fontWeight: 600,
+            }}
           >
             this link
           </a>{' '}
           with other users to subscribe to this service and access its files.
         </h3>
 
-        <Flex direction="column" gap="2" justify="start">
-          <p>
-            <strong>Subscription duration:</strong>{' '}
+        <Flex direction="column" gap="2">
+          <p style={{ fontSize: '1rem' }}>
+            <strong style={{ color: '#4f46e5' }}>Subscription duration:</strong>{' '}
             {service?.ttl ? service?.ttl / 60 / 1000 : 'null'} minutes
           </p>
-          <p>
-            <strong>Subscription fee:</strong> {service?.fee} MIST
+          <p style={{ fontSize: '1rem' }}>
+            <strong style={{ color: '#4f46e5' }}>Subscription fee:</strong> {service?.fee} MIST
           </p>
         </Flex>
       </Card>

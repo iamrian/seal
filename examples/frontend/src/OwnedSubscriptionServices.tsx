@@ -4,7 +4,7 @@
 import { useCurrentAccount, useSuiClient } from '@mysten/dapp-kit';
 import { useEffect, useState } from 'react';
 import { useNetworkVariable } from './networkConfig';
-import { Button, Card } from '@radix-ui/themes';
+import { Button, Card, Flex } from '@radix-ui/themes';
 import { getObjectExplorerLink } from './utils';
 
 export interface Cap {
@@ -29,7 +29,6 @@ export function AllServices() {
 
   useEffect(() => {
     async function getCapObj() {
-      // get all owned cap objects
       const res = await suiClient.getOwnedObjects({
         owner: currentAccount?.address!,
         options: {
@@ -40,6 +39,7 @@ export function AllServices() {
           StructType: `${packageId}::subscription::Cap`,
         },
       });
+
       const caps = res.data
         .map((obj) => {
           const fields = (obj!.data!.content as { fields: any }).fields;
@@ -50,7 +50,6 @@ export function AllServices() {
         })
         .filter((item) => item !== null) as Cap[];
 
-      // get all services of all the owned cap objects
       const cardItems: CardItem[] = await Promise.all(
         caps.map(async (cap) => {
           const service = await suiClient.getObject({
@@ -70,46 +69,86 @@ export function AllServices() {
       setCardItems(cardItems);
     }
 
-    // Call getCapObj immediately
     getCapObj();
-
-    // Set up interval to call getCapObj every 3 seconds
     const intervalId = setInterval(() => {
       getCapObj();
     }, 3000);
 
-    // Cleanup interval on component unmount
     return () => clearInterval(intervalId);
-  }, [currentAccount?.address]); // Empty dependency array since we don't need any external values
+  }, [currentAccount?.address]);
 
   return (
-    <div>
-      <h2 style={{ marginBottom: '1rem' }}>Admin View: Owned Subscription Services</h2>
-      <p style={{ marginBottom: '2rem' }}>
-        This is all the services that you have created. Click manage to upload new files to the
+    <div
+      style={{
+        maxWidth: '900px',
+        margin: '0 auto',
+        padding: '2rem',
+        backgroundColor: '#ffffff',
+        borderRadius: '20px',
+        boxShadow: '0 0 20px rgba(0, 0, 0, 0.05)',
+      }}
+    >
+      <h2 style={{ fontSize: '1.8rem', fontWeight: '600', marginBottom: '1rem', color: '#111' }}>
+        Admin View: Owned Subscription Services
+      </h2>
+      <p style={{ marginBottom: '2rem', color: '#555', fontSize: '1rem' }}>
+        This is all the services that you have created. Click "Manage" to upload new files to the
         service.
       </p>
-      {cardItems.map((item) => (
-        <Card key={`${item.id}`}>
-          <p>
-            <strong>
-              {item.name} (ID {getObjectExplorerLink(item.id)})
-            </strong>
-          </p>
-          <p>Subscription Fee: {item.fee} MIST</p>
-          <p>Subscription Duration: {item.ttl ? parseInt(item.ttl) / 60 / 1000 : 'null'} minutes</p>
-          <Button
-            onClick={() => {
-              window.open(
-                `${window.location.origin}/subscription-example/admin/service/${item.id}`,
-                '_blank',
-              );
+
+      <Flex direction="column" gap="4">
+        {cardItems.map((item) => (
+          <Card
+            key={item.id}
+            style={{
+              background: '#f9fafb',
+              borderRadius: '16px',
+              padding: '1.5rem',
+              border: '1px solid #e0e7ff',
             }}
           >
-            Manage
-          </Button>
-        </Card>
-      ))}
+            <p style={{ fontSize: '1.1rem', fontWeight: '600', marginBottom: '0.5rem' }}>
+              {item.name}{' '}
+              <a
+                href={getObjectExplorerLink(item.id)}
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  fontSize: '0.9rem',
+                  color: '#6a5acd',
+                  textDecoration: 'underline',
+                }}
+              >
+                (View on Explorer)
+              </a>
+            </p>
+            <p style={{ marginBottom: '0.3rem', color: '#333' }}>
+              <strong>Subscription Fee:</strong> {item.fee} MIST
+            </p>
+            <p style={{ marginBottom: '1rem', color: '#333' }}>
+              <strong>Subscription Duration:</strong>{' '}
+              {item.ttl ? parseInt(item.ttl) / 60 / 1000 : 'null'} minutes
+            </p>
+            <Button
+              onClick={() =>
+                window.open(
+                  `${window.location.origin}/subscription-example/admin/service/${item.id}`,
+                  '_blank',
+                )
+              }
+              style={{
+                background: 'linear-gradient(to right, #00bfff, #6a5acd)',
+                color: 'white',
+                borderRadius: '10px',
+                padding: '0.5rem 1.25rem',
+                fontWeight: 'bold',
+              }}
+            >
+              Manage
+            </Button>
+          </Card>
+        ))}
+      </Flex>
     </div>
   );
 }

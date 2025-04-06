@@ -1,18 +1,13 @@
-// Copyright (c) Mysten Labs, Inc.
-// SPDX-License-Identifier: Apache-2.0
-
-import { useState } from 'react';
-import { useSignAndExecuteTransaction, useSuiClient } from '@mysten/dapp-kit';
 import { Transaction } from '@mysten/sui/transactions';
-import { Button, Card, Flex, TextField, Text } from '@radix-ui/themes';
+import { Card, Flex } from '@radix-ui/themes';
+import { useSignAndExecuteTransaction, useSuiClient } from '@mysten/dapp-kit';
+import { useState } from 'react';
 import { useNetworkVariable } from './networkConfig';
-import './styles/crypto-style.css'; // Tambahkan file CSS custom untuk style NFT vibes
+import { useNavigate } from 'react-router-dom';
 
 export function CreateAllowlist() {
+  const navigate = useNavigate();
   const [name, setName] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [successMsg, setSuccessMsg] = useState('');
-  const [errorMsg, setErrorMsg] = useState('');
   const packageId = useNetworkVariable('packageId');
   const suiClient = useSuiClient();
 
@@ -28,20 +23,16 @@ export function CreateAllowlist() {
       }),
   });
 
-  const createAllowlist = () => {
-    if (name.trim() === '') {
-      setErrorMsg('Allowlist name cannot be empty');
+  function createAllowlist(name: string) {
+    if (name === '') {
+      alert('Please enter a name for the allowlist');
       return;
     }
 
-    setIsLoading(true);
-    setErrorMsg('');
-    setSuccessMsg('');
-
     const tx = new Transaction();
     tx.moveCall({
-      arguments: [tx.pure.string(name.trim())],
-      target: `${packageId}::allowlist::create`,
+      target: `${packageId}::allowlist::create_allowlist_entry`,
+      arguments: [tx.pure.string(name)],
     });
     tx.setGasBudget(10000000);
 
@@ -51,45 +42,101 @@ export function CreateAllowlist() {
       },
       {
         onSuccess: async (result) => {
-          console.log('Allowlist created:', result);
-          setSuccessMsg('Allowlist successfully created!');
-          setName('');
-          setIsLoading(false);
-        },
-        onError: (err) => {
-          console.error(err);
-          setErrorMsg('Something went wrong creating the allowlist.');
-          setIsLoading(false);
+          const allowlistObject = result.effects?.created?.find(
+            (item) => item.owner && typeof item.owner === 'object' && 'Shared' in item.owner,
+          );
+          const createdObjectId = allowlistObject?.reference?.objectId;
+          if (createdObjectId) {
+            window.open(
+              `${window.location.origin}/allowlist-example/admin/allowlist/${createdObjectId}`,
+              '_blank',
+            );
+          }
         },
       },
     );
+  }
+
+  const handleViewAll = () => {
+    navigate(`/allowlist-example/admin/allowlists`);
   };
 
   return (
-    <Card className="custom-card dark-mode-card" style={{ padding: '2rem' }}>
-      <Text size="5" weight="bold" className="gradient-title">
-        Create New Allowlist
-      </Text>
-
-      <Flex direction="column" gap="3" mt="3">
-        <TextField.Root
-          placeholder="Enter allowlist name"
-          value={name}
-          onChange={(e) => setName(e.currentTarget.value)}
-          className="text-field-custom"
-        />
-        <Button
-          onClick={createAllowlist}
-          disabled={isLoading}
-          className="glow-button"
-          style={{ width: 'fit-content' }}
+    <div style={{ padding: '2rem', background: '#fff', minHeight: '100vh' }}>
+      <Card
+        style={{
+          backgroundColor: '#ffffff',
+          borderRadius: '16px',
+          padding: '2rem',
+          boxShadow: '0 10px 25px rgba(0, 0, 0, 0.05)',
+          border: '1px solid #e0f7fa',
+          maxWidth: '600px',
+          margin: '0 auto',
+        }}
+      >
+        <h2
+          style={{
+            fontSize: '1.8rem',
+            fontWeight: '700',
+            marginBottom: '1.5rem',
+            background: 'linear-gradient(to right, #4fc3f7, #ba68c8)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            fontFamily: 'Segoe UI, sans-serif',
+          }}
         >
-          {isLoading ? 'Creating...' : 'Create'}
-        </Button>
+          Create a New Allowlist
+        </h2>
 
-        {successMsg && <Text color="green">{successMsg}</Text>}
-        {errorMsg && <Text color="red">{errorMsg}</Text>}
-      </Flex>
-    </Card>
+        <Flex direction="row" gap="3" align="center">
+          <input
+            placeholder="Allowlist Name"
+            onChange={(e) => setName(e.target.value)}
+            style={{
+              padding: '0.7rem 1rem',
+              borderRadius: '12px',
+              border: '1px solid #cfd8dc',
+              backgroundColor: '#f9f9f9',
+              width: '250px',
+              fontSize: '1rem',
+              fontFamily: 'Segoe UI, sans-serif',
+              color: '#333',
+            }}
+          />
+
+          <button
+            onClick={() => createAllowlist(name)}
+            style={{
+              background: 'linear-gradient(to right, #4fc3f7, #ba68c8)',
+              color: '#fff',
+              border: 'none',
+              padding: '0.7rem 1.5rem',
+              borderRadius: '12px',
+              fontWeight: 'bold',
+              fontFamily: 'inherit',
+              cursor: 'pointer',
+            }}
+          >
+            Create
+          </button>
+
+          <button
+            onClick={handleViewAll}
+            style={{
+              background: 'linear-gradient(to right, #00c6ff, #0072ff)',
+              color: '#fff',
+              border: 'none',
+              padding: '0.7rem 1.5rem',
+              borderRadius: '12px',
+              fontWeight: 'bold',
+              fontFamily: 'inherit',
+              cursor: 'pointer',
+            }}
+          >
+            View All
+          </button>
+        </Flex>
+      </Card>
+    </div>
   );
 }
