@@ -85,7 +85,7 @@ export function Service({ setRecipientAllowlist, setCapId }: AllowlistProps) {
           padding: '2rem',
         }}
       >
-        <Text as="h2" size="5" weight="bold" style={{ marginBottom: '1.5rem', color: '#333' }}>
+        <Text as="div" size="5" weight="bold" style={{ marginBottom: '1.5rem', color: '#333' }}>
           Admin View: Service{' '}
           <span style={{ color: '#5b5fef' }}>{service?.name}</span> (
           <a
@@ -99,7 +99,7 @@ export function Service({ setRecipientAllowlist, setCapId }: AllowlistProps) {
           )
         </Text>
 
-        <Text as="h3" size="3" style={{ marginBottom: '1.5rem', color: '#666' }}>
+        <Text as="p" size="3" style={{ marginBottom: '1.5rem', color: '#666' }}>
           Share{' '}
           <a
             href={`${window.location.origin}/subscription-example/view/service/${service?.id}`}
@@ -126,5 +126,4 @@ export function Service({ setRecipientAllowlist, setCapId }: AllowlistProps) {
   );
 }
 
-// Ekspor Service sebagai default
 export default Service;
