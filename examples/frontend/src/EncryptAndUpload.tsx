@@ -53,6 +53,12 @@ export function WalrusUpload({ policyObject, cap_id, moduleName }: WalrusUploadP
 
   const services: WalrusService[] = [
     {
+      id: 'service1',
+      name: 'walrus.space',
+      publisherUrl: '/publisher1',
+      aggregatorUrl: '/aggregator1',
+    },
+    {
       id: 'service2',
       name: 'staketab.org',
       publisherUrl: '/publisher2',
@@ -63,6 +69,24 @@ export function WalrusUpload({ policyObject, cap_id, moduleName }: WalrusUploadP
       name: 'redundex.com',
       publisherUrl: '/publisher3',
       aggregatorUrl: '/aggregator3',
+    },
+    {
+      id: 'service4',
+      name: 'nodes.guru',
+      publisherUrl: '/publisher4',
+      aggregatorUrl: '/aggregator4',
+    },
+    {
+      id: 'service5',
+      name: 'banansen.dev',
+      publisherUrl: '/publisher5',
+      aggregatorUrl: '/aggregator5',
+    },
+    {
+      id: 'service6',
+      name: 'everstake.one',
+      publisherUrl: '/publisher6',
+      aggregatorUrl: '/aggregator6',
     },
   ];
 
@@ -92,10 +116,12 @@ export function WalrusUpload({ policyObject, cap_id, moduleName }: WalrusUploadP
 
   const handleFileChange = (event: any) => {
     const file = event.target.files[0];
+    // Max 10 MiB size
     if (file.size > 10 * 1024 * 1024) {
       alert('File size must be less than 10 MiB');
       return;
     }
+    // Check if file is an image
     if (!file.type.startsWith('image/')) {
       alert('Only image files are allowed');
       return;
@@ -207,30 +233,14 @@ export function WalrusUpload({ policyObject, cap_id, moduleName }: WalrusUploadP
   }
 
   return (
-    <Card
-      style={{
-        background: 'white',
-        borderRadius: '20px',
-        padding: '2rem',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
-        width: '100%',
-      }}
-    >
-      <Flex direction="column" gap="4" align="start">
+    <Card>
+      <Flex direction="column" gap="2" align="start">
         <Flex gap="2" align="center">
-          <Text size="3" weight="medium" style={{ color: '#5b5bde' }}>
-            Select Walrus service:
-          </Text>
+          <Text>Select Walrus service:</Text>
           <select
             value={selectedService}
             onChange={(e) => setSelectedService(e.target.value)}
-            style={{
-              padding: '0.5rem 1rem',
-              borderRadius: '10px',
-              border: '1px solid #ccc',
-              background: '#f9f9ff',
-              fontSize: '1rem',
-            }}
+            aria-label="Select Walrus service"
           >
             {services.map((service) => (
               <option key={service.id} value={service.id}>
@@ -239,60 +249,72 @@ export function WalrusUpload({ policyObject, cap_id, moduleName }: WalrusUploadP
             ))}
           </select>
         </Flex>
-
         <input
           type="file"
           onChange={handleFileChange}
           accept="image/*"
-          style={{ fontSize: '0.95rem' }}
+          aria-label="Choose image file to upload"
         />
-        <Text size="2" color="gray">
-          Max file size: 10 MiB. Only image files allowed.
-        </Text>
-
-        <Button color="blue" radius="large" onClick={handleSubmit} disabled={file === null}>
-          First Step: Encrypt and Upload to Walrus
+        <p>File size must be less than 10 MiB. Only image files are allowed.</p>
+        <Button
+          onClick={() => {
+            handleSubmit();
+          }}
+          disabled={file === null}
+        >
+          First step: Encrypt and upload to Walrus
         </Button>
-
         {isUploading && (
-          <Flex gap="2" align="center">
-            <Spinner />
-            <Text size="2">Uploading to Walrus... This may take a few seconds.</Text>
-          </Flex>
+          <div role="status">
+            <Spinner className="animate-spin" aria-label="Uploading" />
+            <span>
+              Uploading to Walrus (may take a few seconds, retrying with different service is
+              possible){' '}
+            </span>
+          </div>
         )}
 
         {info && file && (
-          <Flex direction="column" gap="2">
-            <Text size="3" weight="bold">
-              Upload Result:
-            </Text>
-            <Text>Status: {info.status}</Text>
-            <a
-              href={info.blobUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ textDecoration: 'underline', color: '#5b5bde' }}
-            >
-              Encrypted Blob
-            </a>
-            <a
-              href={info.suiUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ textDecoration: 'underline', color: '#5b5bde' }}
-            >
-              View Sui Object
-            </a>
-          </Flex>
+          <div id="uploaded-blobs" role="region" aria-label="Upload details">
+            <dl>
+              <dt>Status:</dt>
+              <dd>{info.status}</dd>
+              <dd>
+                <a
+                  href={info.blobUrl}
+                  style={{ textDecoration: 'underline' }}
+                  download
+                  onClick={(e) => {
+                    e.preventDefault();
+                    window.open(info.blobUrl, '_blank', 'noopener,noreferrer');
+                  }}
+                  aria-label="Download encrypted blob"
+                >
+                  Encrypted blob
+                </a>
+              </dd>
+              <dd>
+                <a
+                  href={info.suiUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ textDecoration: 'underline' }}
+                  aria-label="View Sui object details"
+                >
+                  Sui Object
+                </a>
+              </dd>
+            </dl>
+          </div>
         )}
-
         <Button
-          color="purple"
-          radius="large"
-          onClick={() => handlePublish(policyObject, cap_id, moduleName)}
+          onClick={() => {
+            handlePublish(policyObject, cap_id, moduleName);
+          }}
           disabled={!info || !file || policyObject === ''}
+          aria-label="Encrypt and upload file"
         >
-          Second Step: Associate File to Sui Object
+          Second step: Associate file to Sui object
         </Button>
       </Flex>
     </Card>
