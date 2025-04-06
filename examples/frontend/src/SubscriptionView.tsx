@@ -125,3 +125,6 @@ export function Service({ setRecipientAllowlist, setCapId }: AllowlistProps) {
     </Flex>
   );
 }
+
+// Ekspor Service sebagai default
+export default Service;

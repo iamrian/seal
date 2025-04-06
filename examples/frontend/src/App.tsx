@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ConnectButton, useCurrentAccount } from '@mysten/dapp-kit';
 import { Box, Container, Flex, Grid, Card } from '@radix-ui/themes';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
@@ -6,9 +6,8 @@ import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { CreateAllowlist } from './CreateAllowlist';
 import { Allowlist } from './Allowlist';
 import WalrusUpload from './EncryptAndUpload';
-import { useState } from 'react';
 import { CreateService } from './CreateSubscriptionService';
-import FeedsToSubscribe from './SubscriptionView';
+import SubscriptionView from './SubscriptionView';
 import { Service } from './SubscriptionService';
 import { AllAllowlist } from './OwnedAllowlists';
 import { AllServices } from './OwnedSubscriptionServices';
@@ -217,7 +216,7 @@ function App() {
                     <Route path="/admin/services" element={<AllServices />} />
                     <Route
                       path="/view/service/:id"
-                      element={<FeedsToSubscribe suiAddress={currentAccount.address} />}
+                      element={<SubscriptionView setRecipientAllowlist={setRecipientAllowlist} setCapId={setCapId} />}
                     />
                   </Routes>
                 }
