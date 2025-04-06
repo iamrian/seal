@@ -14,8 +14,8 @@
     },
     {
       "source": "/aggregator4/:path*",
-      "destination": "https://https://walrus-testnet-aggregator.trusted-point.com/:path*"
-    },
+      "destination": "https://walrus-testnet-aggregator.trusted-point.com/:path*"
+    },    
     {
       "source": "/publisher1/:path*",
       "destination": "https://publisher.walrus-testnet.walrus.space/:path*"
