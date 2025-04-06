@@ -9,8 +9,8 @@ import {
   Card,
   Dialog,
   Flex,
-  Text,
   Heading,
+  Text,
 } from '@radix-ui/themes';
 import { fromHex } from '@mysten/sui/utils';
 import { Transaction } from '@mysten/sui/transactions';
@@ -148,18 +148,23 @@ const AllowlistView: React.FC<{ suiAddress: string }> = ({ suiAddress }) => {
       }}
     >
       <Heading size="6" mb="3" style={{ color: '#2D2F87' }}>
-        🔐 Files for Allowlist <span style={{ color: '#5E60CE' }}>{feed?.allowlistName}</span>
+        🔐 Files for Allowlist{' '}
+        <span style={{ color: '#5E60CE' }}>{feed?.allowlistName}</span>
       </Heading>
       <Text size="2" mb="4" color="gray">
         ID:{' '}
-        <a
-          href={getObjectExplorerLink(feed?.allowlistId ?? '')}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ color: '#4CC9F0', textDecoration: 'underline' }}
-        >
-          {feed?.allowlistId}
-        </a>
+        {feed?.allowlistId ? (
+          <a
+            href={`${getObjectExplorerLink(feed.allowlistId)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: '#4CC9F0', textDecoration: 'underline' }}
+          >
+            {feed.allowlistId}
+          </a>
+        ) : (
+          'N/A'
+        )}
       </Text>
 
       {feed?.blobIds.length === 0 ? (
@@ -181,9 +186,7 @@ const AllowlistView: React.FC<{ suiAddress: string }> = ({ suiAddress }) => {
           </Dialog.Trigger>
           {decryptedFileUrls.length > 0 && (
             <Dialog.Content maxWidth="600px" key={reloadKey}>
-              <Dialog.Title asChild>
-                <Text size="5" weight="bold">🖼️ Decrypted Files</Text>
-              </Dialog.Title>
+              <Dialog.Title>🖼️ Decrypted Files</Dialog.Title>
               <Flex direction="column" gap="3" mt="3">
                 {decryptedFileUrls.map((url, i) => (
                   <img
@@ -195,7 +198,6 @@ const AllowlistView: React.FC<{ suiAddress: string }> = ({ suiAddress }) => {
                       borderRadius: '12px',
                       boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                     }}
-                    onError={(e) => (e.currentTarget.src = '/fallback-image.png')}
                   />
                 ))}
               </Flex>
@@ -217,9 +219,7 @@ const AllowlistView: React.FC<{ suiAddress: string }> = ({ suiAddress }) => {
 
       <AlertDialog.Root open={!!error} onOpenChange={() => setError(null)}>
         <AlertDialog.Content maxWidth="450px">
-          <AlertDialog.Title asChild>
-            <Text size="5" weight="bold">Error</Text>
-          </AlertDialog.Title>
+          <AlertDialog.Title>Error</AlertDialog.Title>
           <AlertDialog.Description size="2">{error}</AlertDialog.Description>
           <Flex gap="3" mt="4" justify="end">
             <AlertDialog.Action>
